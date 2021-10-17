@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#6699CC">
+    <TextView
+        android:id="@+id/header_title"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginLeft="10dp"
+        android:text="Today's APOD"
+        android:textSize="30sp"
+        android:textColor="@color/black"
+        android:gravity="center_vertical"/>
+    <ImageButton
+        android:id="@+id/menu"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:background="@drawable/ic_menu"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginRight="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+    <ImageButton
+        android:id="@+id/fab_btn_main"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginRight="10dp"
+        app:layout_constraintRight_toLeftOf="@+id/menu"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@drawable/ic_favourite_de_select" />
+    <ImageButton
+        android:id="@+id/search_date"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginRight="10dp"
+        app:layout_constraintRight_toLeftOf="@+id/fab_btn_main"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:background="@drawable/ic_calendar" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,63 +6,68 @@
     android:layout_height="match_parent"
     tools:context=".view.MainActivity">
 
+    <include
+        android:id="@+id/header_ll"
+        layout="@layout/header"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="50dp"
+        android:clipToPadding="false"
+        android:paddingTop="10dp"
+        android:paddingBottom="?attr/actionBarSize"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
-            android:layout_marginTop="10dp"
             android:layout_marginStart="10dp"
-            android:layout_marginBottom="20dp">
-
-            <TextView
-                android:id="@+id/heading"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:text="@string/heading"
-                android:layout_marginTop="20dp"
-                android:textSize="35sp" />
-
-            <TextView
-                android:id="@+id/pod_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/heading"
-                android:text="@string/heading"
-                android:layout_marginTop="20dp"
-                android:textSize="30sp" />
-
-            <TextView
-                android:id="@+id/today"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:layout_below="@+id/pod_title"
-                android:inputType="date"
-                android:layout_marginTop="20dp"
-                android:text="Hello World!"
-                android:textSize="25sp" />
+            android:layout_marginEnd="10dp">
 
             <ImageView
                 android:id="@+id/apod_img"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:adjustViewBounds="true" />
+
+            <TextView
+                android:id="@+id/today"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_below="@+id/apod_img"
+                android:layout_alignParentRight="true"
                 android:layout_marginTop="20dp"
-                android:layout_below="@+id/today" />
+                android:text=""
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/pod_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/today"
+                android:layout_marginTop="20dp"
+                android:layout_toLeftOf="@+id/today"
+                android:text=""
+                android:textColor="@color/black"
+                android:textSize="25sp"
+                android:textStyle="bold|italic" />
+
             <TextView
                 android:id="@+id/description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_below="@+id/pod_title"
                 android:layout_marginTop="20dp"
-                android:layout_below="@+id/apod_img"
-                android:textSize="25sp"/>
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:textStyle="" />
         </RelativeLayout>
     </ScrollView>
 

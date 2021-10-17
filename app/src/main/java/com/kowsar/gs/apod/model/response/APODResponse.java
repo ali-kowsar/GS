@@ -27,6 +27,9 @@ public class APODResponse {
     @SerializedName("title")
     @Expose
     private String title;
+    @SerializedName("thumbnail_url")
+    @Expose
+    private String thumbURL;
     @SerializedName("url")
     @Expose
     private String url;
@@ -91,8 +94,26 @@ public class APODResponse {
         return url;
     }
 
+    public String getThumbURL() {
+        return thumbURL;
+    }
+
     public void setUrl(String url) {
         this.url = url;
     }
 
+    @Override
+    public String toString() {
+        return "APODResponse{" +
+                "copyright='" + copyright + '\'' +
+                ", date='" + date + '\'' +
+                ", explanation='" + explanation + '\'' +
+                ", hdurl='" + hdurl + '\'' +
+                ", mediaType='" + mediaType + '\'' +
+                ", serviceVersion='" + serviceVersion + '\'' +
+                ", title='" + title + '\'' +
+                ", thumbnail_url='" + thumbURL + '\'' +
+                ", url='" + url + '\'' +
+                '}';
+    }
 }
