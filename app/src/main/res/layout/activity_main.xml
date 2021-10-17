@@ -53,7 +53,6 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/today"
                 android:layout_marginTop="20dp"
-                android:layout_toLeftOf="@+id/today"
                 android:text=""
                 android:textColor="@color/black"
                 android:textSize="25sp"

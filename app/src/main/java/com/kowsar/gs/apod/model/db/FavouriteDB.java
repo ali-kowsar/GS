@@ -33,27 +33,17 @@ public class FavouriteDB extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        db.execSQL("DROP TABLE IF EXISTS " + APOD_TABLE_NAME);
+        onCreate(db);
 
     }
 
-    public void insertEmpty(){
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        for (int i=0;i<10;i++){
-            cv.put(ITEM_ID,i);
-            cv.put(TITLE, "Kowsar");
-            cv.put(THUMB_URL, "https://apod.nasa.gov/apod/image/2110/Helix_Oxygen_crop2_1024.jpg");
-//            cv.put(ITEM_URL,"https://api.nasa.gov/planetary/apod?api_key=Kd5K7JqQLWIraJ462ddK6jfm8vgCb6ach91Z6VQN&date=2021-10-14&thumbs=True");
-            db.insert(APOD_TABLE_NAME, null,cv);
-        }
-    }
     public void insertFABToDB(String id,String title, String thumbUrl) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(ITEM_ID, id);
         cv.put(TITLE, title);
         cv.put(THUMB_URL, thumbUrl);
-//        cv.put(ITEM_URL, itemURL);
         long rowid=db.insert(APOD_TABLE_NAME, null, cv);
         Log.d(TAG, "rowid="+rowid);
     }

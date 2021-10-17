@@ -10,27 +10,19 @@ import com.kowsar.gs.apod.model.data.APODRepository;
 import com.kowsar.gs.apod.model.response.APODResponse;
 import com.kowsar.gs.apod.view.APODItem;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class APODViewModel extends ViewModel {
     private final String TAG= this.getClass().getSimpleName();
     private MutableLiveData<APODResponse> mutableLiveData;
     private APODRepository apodRepository;
     private MutableLiveData<String> errorMessage;
 
-    public void init(String detailId){
-        Log.d(TAG, "init(): Details Id="+detailId);
+    public void init(){
+        Log.d(TAG, "init(): Enter");
         if (mutableLiveData != null){
             return;
         }
         apodRepository = APODRepository.getInstance();
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-        String dateStr= formatter.format(date);
         mutableLiveData = apodRepository.getAPODMutableLiveData();
-
-        getAPODByDate(detailId);
     }
 
     public void getAPODByDate(String date){
