@@ -1,5 +1,7 @@
 package com.kowsar.gs.apod.model.data;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import androidx.lifecycle.MutableLiveData;
@@ -20,21 +22,21 @@ public class APODRepository {
     private static APODRepository apodRepo;
     private MutableLiveData<APODResponse> apodLiveData;
     private MutableLiveData<ResponseBody> apodErrorLiveData;
-    private FavouriteDB db;
-    public static APODRepository getInstance(){
+    private static FavouriteDB apodDb;
+    public static APODRepository getInstance(FavouriteDB db){
         if(apodRepo == null){
-            return new APODRepository();
+            return new APODRepository(db);
         }
         return apodRepo;
     }
 
     private APODApi aopdApi;
 
-    private APODRepository(){
+    private APODRepository(FavouriteDB db){
         Log.d(TAG,"APODRepository(): New instance created");
         aopdApi = APODRetrofitService.getApiService();
         apodLiveData = new MutableLiveData<>();
-//        db= new FavouriteDB(mContext);
+        apodDb = db;
     }
 
     public void fetchNASAAPOD(String date){
@@ -86,9 +88,40 @@ public class APODRepository {
 
     public void insertToDB(APODItem fabItem) {
         Log.d(TAG, "insertToDB(): INSERT to DB");
+        SQLiteDatabase favDB = apodDb.getReadableDatabase();
+        apodDb.insertFABToDB(fabItem.getId(), fabItem.getTitle(), fabItem.getThumbURL());
+    }
+
+    public LastLoadedItem fetchLastDataFromDB() {
+        Log.d(TAG, "fetchLastDataFromDB(): Enter");
+        Cursor cursor = apodDb.fetchLastData();
+        try {
+            while (cursor.moveToNext()) {
+                String title = cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_TITLE));
+                String date = cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_DATE));
+                String url= cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_URL));
+                String desc = cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_DESCRIPTION));
+                byte[] imgaByte = cursor.getBlob(cursor.getColumnIndex(FavouriteDB.KEY_IMAGE));
+
+                Log.d(TAG, "title=" + title + ",id=" + date+", url="+url);
+                return new LastLoadedItem(date,title,url,desc,imgaByte);
+
+            }
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return null;
     }
 
     public void removeFabItem(String date) {
         Log.d(TAG, "removeFabItem(): Remove from DB");
+        apodDb.removeFromFab(date);
+
+    }
+
+    public void insertLastInfoData(String title, String date, String url, String explanation, byte[] imageData) {
+        apodDb.insertItem(title, date, url, explanation, imageData);
     }
 }

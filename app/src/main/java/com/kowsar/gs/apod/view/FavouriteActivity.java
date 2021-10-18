@@ -2,7 +2,6 @@ package com.kowsar.gs.apod.view;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -64,7 +63,6 @@ public class FavouriteActivity extends AppCompatActivity implements APODFabAdapt
         Log.d(TAG, "getFabList(): Enter");
         fabList.clear();
         Cursor cursor = db.fetchAllFabData();
-        SQLiteDatabase favDB = db.getReadableDatabase();
         try {
             while (cursor.moveToNext()){
                 String title= cursor.getString(cursor.getColumnIndex(FavouriteDB.TITLE));

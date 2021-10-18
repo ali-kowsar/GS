@@ -5,8 +5,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
@@ -37,6 +35,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.kowsar.gs.apod.R;
+import com.kowsar.gs.apod.model.data.LastLoadedItem;
 import com.kowsar.gs.apod.model.db.FavouriteDB;
 import com.kowsar.gs.apod.model.response.APODResponse;
 import com.kowsar.gs.apod.utility.APODSharedPref;
@@ -117,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         apodViewModel = ViewModelProviders.of(this).get(APODViewModel.class);
 
         //ViewModel
-        apodViewModel.init();
+        apodViewModel.init(db);
         apodViewModel.getAPODLiveData().observe(this, apodResponse -> {
             Log.d(TAG, "Observer(): id=" + apodResponse.getDate());
             currentItem = apodResponse;
@@ -166,9 +165,29 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             } else {
                 fab.setBackgroundResource(R.drawable.ic_favourite_de_select);
             }
-            fetchLastDataFromDB();
+            LastLoadedItem lastItem=apodViewModel.getLastItemInfo();
+            loadLastInfo(lastItem);
         }
         applyLightDarkTheme();
+    }
+
+    private void loadLastInfo(LastLoadedItem lastItem) {
+        Log.d(TAG, "loadLastInfo(): Enter");
+        if (lastItem != null) {
+            title.setText(lastItem.getTitle());
+            date.setText(lastItem.getDate());
+            description.setText(lastItem.getDesc());
+            Bitmap bitmap = getImage(lastItem.getImageData());
+            imgAPOD.setImageBitmap(bitmap);
+            Log.d(TAG, "title=" + title + ",id=" + date + ", url=" + lastItem.getUrl());
+            if (currentItem == null) {
+                currentItem = new APODResponse();
+                currentItem.setDate(lastItem.getDate());
+                currentItem.setTitle(lastItem.getTitle());
+                currentItem.setUrl(lastItem.getUrl());
+                currentItem.setMediaType(Constant.APODA_MEDIA_TYPE_IMAGE);
+            }
+        }
     }
 
     private void setDarkMode(boolean isDarkMode) {
@@ -201,71 +220,10 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         headerTitle.setTextColor(getResources().getColor(R.color.textColor));
     }
 
-    private void fetchLastDataFromDB() {
-        Log.d(TAG, "fetchLastDataFromDB(): Enter");
-        Cursor cursor = db.fetchLastData();
-        SQLiteDatabase lastDB = db.getReadableDatabase();
-        try {
-            while (cursor.moveToNext()) {
-                String title1 = cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_TITLE));
-                title.setText(title1);
-                String date1 = cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_DATE));
-                date.setText(date1);
-                String url= cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_URL));
-                String desc = cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_DESCRIPTION));
-                description.setText(desc);
-                byte[] imgaByte = cursor.getBlob(cursor.getColumnIndex(FavouriteDB.KEY_IMAGE));
-                Bitmap bitmap = getImage(imgaByte);
-                imgAPOD.setImageBitmap(bitmap);
-
-
-                Log.d(TAG, "title=" + title + ",id=" + date+", url="+url);
-                if (currentItem == null){
-                    currentItem = new APODResponse();
-                    currentItem.setDate(date1);
-                    currentItem.setTitle(title1);
-                    currentItem.setUrl(url);
-                    currentItem.setMediaType(Constant.APODA_MEDIA_TYPE_IMAGE);
-                }
-            }
-        } finally {
-            if (cursor != null && !cursor.isClosed()) {
-                cursor.close();
-            }
-        }
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 //        getMenuInflater().inflate(R.menu.apod_menu, menu);
         return true;
-    }
-
-    private void addToFabDB(APODResponse currentItem) {
-        Log.d(TAG, "addToFabDB(): mediaType=" + currentItem.getMediaType());
-        Cursor cursor = db.fetchAllFabData();
-        SQLiteDatabase favDB = db.getReadableDatabase();
-        try {
-            while (cursor.moveToNext()) {
-                String title = cursor.getString(cursor.getColumnIndex(FavouriteDB.TITLE));
-                String id = cursor.getString(cursor.getColumnIndex(FavouriteDB.ITEM_ID));
-                String url = cursor.getString(cursor.getColumnIndex(FavouriteDB.THUMB_URL));
-                Log.d(TAG, "title=" + title + ",id=" + id + ", url=" + url);
-            }
-        } finally {
-            if (cursor != null && !cursor.isClosed()) {
-                cursor.close();
-            }
-        }
-        if (currentItem.getMediaType().equalsIgnoreCase(Constant.APODA_MEDIA_TYPE_VIDEO)) {
-            db.insertFABToDB(currentItem.getDate(), currentItem.getTitle(), currentItem.getThumbURL());
-        } else {
-            db.insertFABToDB(currentItem.getDate(), currentItem.getTitle(), currentItem.getUrl());
-        }
-    }
-
-    private void removeFromFabDB(APODResponse currentItem) {
-        db.removeFromFab(currentItem.getDate());
     }
 
     private void initPD() {
@@ -375,14 +333,16 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 if (APODSharedPref.getInstance(this).getBoolean(prefKey)) {
                     fab.setBackgroundResource(R.drawable.ic_favourite_de_select);
                     APODSharedPref.getInstance(this).putBoolean(prefKey, false);
-//                apodViewModel.removeFromFabDB(currentItem);
-                    removeFromFabDB(currentItem);
+                    apodViewModel.removeFromFabDB(currentItem.getDate());
 
                 } else {
                     fab.setBackgroundResource(R.drawable.ic_favourite_selected);
                     APODSharedPref.getInstance(this).putBoolean(prefKey, true);
-//                apodViewModel.addToFabDB(currentItem);
-                    addToFabDB(currentItem);
+                    if (currentItem.getMediaType().equalsIgnoreCase(Constant.APODA_MEDIA_TYPE_VIDEO)) {
+                        apodViewModel.addToFabDB(currentItem.getDate(), currentItem.getTitle(), currentItem.getThumbURL());
+                    } else {
+                        apodViewModel.addToFabDB(currentItem.getDate(), currentItem.getTitle(), currentItem.getUrl());
+                    }
                 }
                 break;
             case R.id.search_date:
@@ -402,6 +362,9 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 showPopupWindow(v);
                 break;
         }
+    }
+
+    private void addToFabDB(String date, String title, String thumbURL) {
     }
 
     Runnable timeOutRunnable = () -> {
@@ -469,6 +432,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         }else {
             url=currentItem.getUrl();
         }
-        db.insertItem(currentItem.getTitle(), currentItem.getDate(), url, currentItem.getExplanation(), imageData);
+        apodViewModel.insertLastDate(currentItem.getTitle(), currentItem.getDate(), url, currentItem.getExplanation(), imageData);
+//        db.insertItem(currentItem.getTitle(), currentItem.getDate(), url, currentItem.getExplanation(), imageData);
     }
 }
