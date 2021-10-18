@@ -5,6 +5,18 @@
     android:layout_height="match_parent"
     style="@style/Theme.AppCompat.DayNight.NoActionBar"
     android:background="@color/backgroundColor">
+    <TextView
+        android:id="@+id/no_favorites"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textColor="@color/textColor"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="@string/no_favorite"
+        android:gravity="center"
+        android:textSize="30sp"
+        android:visibility="visible"/>
+
     <include
         android:id="@+id/header_fav"
         layout="@layout/header"

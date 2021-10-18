@@ -82,7 +82,7 @@ public class APODFabAdapter extends RecyclerView.Adapter<APODFabAdapter.ViewHold
                     int pos= getAdapterPosition();
                     Log.d(TAG, "ViewHolder:OnItemClicked-->pos="+pos);
                     fabBtn.setBackgroundResource(R.drawable.ic_favourite_de_select);
-                    listner.deleteFromFAV(apodItems.get(getAdapterPosition()));
+                    listner.deleteFromFAV(apodItems.get(getAdapterPosition()),apodItems.size()==1?true:false);
                     apodItems.remove(pos);
                     notifyDataSetChanged();
                     break;
@@ -95,7 +95,7 @@ public class APODFabAdapter extends RecyclerView.Adapter<APODFabAdapter.ViewHold
     }
 
     interface ICommunication{
-        public void deleteFromFAV(APODItem item);
+        public void deleteFromFAV(APODItem item, boolean isEmptyList);
         public void favdetail(APODItem item);
     }
 }

@@ -38,7 +38,6 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.kowsar.gs.apod.R;
 import com.kowsar.gs.apod.model.db.FavouriteDB;
-import com.kowsar.gs.apod.model.db.LastUpdatedAPOD;
 import com.kowsar.gs.apod.model.response.APODResponse;
 import com.kowsar.gs.apod.utility.APODSharedPref;
 import com.kowsar.gs.apod.utility.Constant;
@@ -73,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     ProgressDialog progressDialog;
     String detailId;
     private FavouriteDB db;
-    private LastUpdatedAPOD lastUpdatedAPOD;
     private Handler mHandler;
     private PopupWindow popupWindow;
 
@@ -98,8 +96,6 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         initPD();
 
         db = new FavouriteDB(this);
-        lastUpdatedAPOD = new LastUpdatedAPOD(this);
-
         mainLayout=(ConstraintLayout)findViewById(R.id.main_activity_layout);
         title = (TextView) findViewById(R.id.pod_title);
         menu = (ImageButton) findViewById(R.id.menu);
@@ -158,15 +154,21 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 //                    .error(R.drawable.default_apod_image_gs)
 //                    .into(imgAPOD);
         }); // end of ViewModel
+
         if (Utils.isNetworkConnected(this)) {
             apodViewModel.getAPODByDate(detailId);
+            showDialog("Fetching data from server.", true);
         } else {
             Log.d(TAG, "No Network connection. Load last data");
             showDialog(null, false);
+            if (APODSharedPref.getInstance(this).getBoolean(prefKey)) {
+                fab.setBackgroundResource(R.drawable.ic_favourite_selected);
+            } else {
+                fab.setBackgroundResource(R.drawable.ic_favourite_de_select);
+            }
             fetchLastDataFromDB();
         }
         applyLightDarkTheme();
-        showDialog("Fetching data from server.", true);
     }
 
     private void setDarkMode(boolean isDarkMode) {
@@ -201,22 +203,30 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     private void fetchLastDataFromDB() {
         Log.d(TAG, "fetchLastDataFromDB(): Enter");
-        Cursor cursor = lastUpdatedAPOD.fetchLastData();
-        SQLiteDatabase lastDB = lastUpdatedAPOD.getReadableDatabase();
+        Cursor cursor = db.fetchLastData();
+        SQLiteDatabase lastDB = db.getReadableDatabase();
         try {
             while (cursor.moveToNext()) {
-                String title1 = cursor.getString(cursor.getColumnIndex(LastUpdatedAPOD.KEY_TITLE));
+                String title1 = cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_TITLE));
                 title.setText(title1);
-                String date1 = cursor.getString(cursor.getColumnIndex(LastUpdatedAPOD.KEY_DATE));
+                String date1 = cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_DATE));
                 date.setText(date1);
-                String desc = cursor.getString(cursor.getColumnIndex(LastUpdatedAPOD.KEY_DESCRIPTION));
+                String url= cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_URL));
+                String desc = cursor.getString(cursor.getColumnIndex(FavouriteDB.KEY_DESCRIPTION));
                 description.setText(desc);
-                byte[] imgaByte = cursor.getBlob(cursor.getColumnIndex(LastUpdatedAPOD.KEY_IMAGE));
+                byte[] imgaByte = cursor.getBlob(cursor.getColumnIndex(FavouriteDB.KEY_IMAGE));
                 Bitmap bitmap = getImage(imgaByte);
                 imgAPOD.setImageBitmap(bitmap);
 
 
-                Log.d(TAG, "title=" + title + ",id=" + date);
+                Log.d(TAG, "title=" + title + ",id=" + date+", url="+url);
+                if (currentItem == null){
+                    currentItem = new APODResponse();
+                    currentItem.setDate(date1);
+                    currentItem.setTitle(title1);
+                    currentItem.setUrl(url);
+                    currentItem.setMediaType(Constant.APODA_MEDIA_TYPE_IMAGE);
+                }
             }
         } finally {
             if (cursor != null && !cursor.isClosed()) {
@@ -282,10 +292,10 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             if (!progressDialog.isShowing()){
                 progressDialog.setMessage(msg);
                 progressDialog.show();
-//                mHandler.postDelayed(timeOutRunnable, 20000);
+                mHandler.postDelayed(timeOutRunnable, 20000);
             }
         } else {
-//            mHandler.removeCallbacksAndMessages (null);
+            mHandler.removeCallbacksAndMessages (null);
             progressDialog.dismiss();
         }
     }
@@ -357,10 +367,10 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         switch (v.getId()) {
             case R.id.fab_btn_main:
                 Log.d(TAG, "onClick(): Fav btn clicked");
-                if (!Utils.isNetworkConnected(this)){
-                    Toast.makeText(this, "No Network. Please check and Try", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+//                if (!Utils.isNetworkConnected(this)){
+//                    Toast.makeText(this, "No Network. Please check and Try", Toast.LENGTH_SHORT).show();
+//                    return;
+//                }
 
                 if (APODSharedPref.getInstance(this).getBoolean(prefKey)) {
                     fab.setBackgroundResource(R.drawable.ic_favourite_de_select);
@@ -453,6 +463,12 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     //insert last information to SQLIte DB
     private void insertToDb(Bitmap bitmap) {
         byte[] imageData = getBytes(bitmap);
-        lastUpdatedAPOD.insertItem(currentItem.getTitle(), currentItem.getDate(), currentItem.getExplanation(), imageData);
+        String url;
+        if (currentItem.getMediaType().equalsIgnoreCase(Constant.APODA_MEDIA_TYPE_VIDEO)){
+            url=currentItem.getThumbURL();
+        }else {
+            url=currentItem.getUrl();
+        }
+        db.insertItem(currentItem.getTitle(), currentItem.getDate(), url, currentItem.getExplanation(), imageData);
     }
 }

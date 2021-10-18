@@ -30,6 +30,7 @@ public class FavouriteActivity extends AppCompatActivity implements APODFabAdapt
     private ImageButton menu;
     private ImageButton fav;
     private TextView header;
+    private TextView noData;
 
 
     @Override
@@ -45,7 +46,13 @@ public class FavouriteActivity extends AppCompatActivity implements APODFabAdapt
         fav.setVisibility(View.GONE);
         header=(TextView) findViewById(R.id.header_title);
         header.setText(R.string.title_favourite);
+        noData=(TextView)findViewById(R.id.no_favorites);
         getFabList();
+        if (fabList.isEmpty()){
+            noData.setVisibility(View.VISIBLE);
+        }else {
+            noData.setVisibility(View.GONE);
+        }
         RecyclerView rv= (RecyclerView)findViewById(R.id.fav_rv);
         adapter= new APODFabAdapter(fabList, this,this);
         rv.setLayoutManager(new LinearLayoutManager(this));
@@ -83,9 +90,14 @@ public class FavouriteActivity extends AppCompatActivity implements APODFabAdapt
     }
 
     @Override
-    public void deleteFromFAV(APODItem item) {
+    public void deleteFromFAV(APODItem item, boolean isEmptyList) {
         Log.d(TAG, "deleteFromFAV(): Id="+item.getId());
         APODSharedPref.getInstance(this).putBoolean(item.getId(), false);
+        if (isEmptyList){
+            noData.setVisibility(View.VISIBLE);
+        }else {
+            noData.setVisibility(View.GONE);
+        }
         db.removeFromFab(item.getId());
     }
 

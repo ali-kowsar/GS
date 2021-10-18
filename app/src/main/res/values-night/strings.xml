@@ -2,4 +2,5 @@
 <resources>
     <string name="dark_mode">Dark Mode</string>
     <string name="go_to_favourite">Go to Favourite</string>
+    <string name="no_favorite">No Favorites</string>
 </resources>
