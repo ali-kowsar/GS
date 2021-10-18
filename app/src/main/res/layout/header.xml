@@ -13,6 +13,9 @@
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginLeft="10dp"
         android:text="Today's APOD"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingRight="40dp"
         android:textSize="30sp"
         android:textColor="@color/textColor"
         android:gravity="center_vertical"/>

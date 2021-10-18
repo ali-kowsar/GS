@@ -4,6 +4,7 @@ import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -28,9 +29,11 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.kowsar.gs.apod.R;
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     APODViewModel apodViewModel;
     APODResponse currentItem;
+    ConstraintLayout mainLayout;
     TextView date;
     TextView description;
     TextView title;
@@ -96,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         db = new FavouriteDB(this);
         lastUpdatedAPOD = new LastUpdatedAPOD(this);
 
+        mainLayout=(ConstraintLayout)findViewById(R.id.main_activity_layout);
         title = (TextView) findViewById(R.id.pod_title);
         menu = (ImageButton) findViewById(R.id.menu);
         menu.setOnClickListener(this);
@@ -160,6 +165,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             showDialog(null, false);
             fetchLastDataFromDB();
         }
+        applyLightDarkTheme();
         showDialog("Fetching data from server.", true);
     }
 
@@ -171,6 +177,26 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         }else {
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        int currentMode = newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK;
+
+        if (currentMode == Configuration.UI_MODE_NIGHT_NO || currentMode == Configuration.UI_MODE_NIGHT_YES){
+            Log.d(TAG, "Current (16->Light,32->Dark)Mode="+currentMode);
+
+            applyLightDarkTheme();
+        }
+    }
+
+    private void applyLightDarkTheme() {
+        mainLayout.setBackgroundColor(getResources().getColor(R.color.backgroundColor));
+        date.setTextColor(getResources().getColor(R.color.textColor));
+        title.setTextColor(getResources().getColor(R.color.textColor));
+        description.setTextColor(getResources().getColor(R.color.textColor));
+        headerTitle.setTextColor(getResources().getColor(R.color.textColor));
     }
 
     private void fetchLastDataFromDB() {
@@ -201,7 +227,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.apod_menu, menu);
+//        getMenuInflater().inflate(R.menu.apod_menu, menu);
         return true;
     }
 
