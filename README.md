@@ -16,4 +16,11 @@ Also User can see as their desire date. Just click on "Calendar" icon at Header 
 * Current Activity will not recreated when change Dark mode. 
 * In App prevent activity recreation by add configurationChange as **uiMode**
 * Easy to use and make favorite as well as remove from favorite. Just need to click on favorite icon
-* 
+
+1. Just Click on **NASA APOD** icon to launch app
+2. Loading screen showing
+3. Just click on Favotite icon to add Favotite list
+4. Click on Calendar icon (Top and left of Favorite icon) to select desire date and it will show APOD on selected date
+5. To change theme **Menu->Dark Mode**
+6. To Show all Favorite list **Menu->Go to Favorite**
+7. Click on Favorite icon if want to remove from Favorite
