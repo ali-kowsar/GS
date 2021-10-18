@@ -2,11 +2,13 @@ package com.kowsar.gs.apod.view;
 
 import android.app.DatePickerDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.text.LineBreaker;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -14,17 +16,21 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
+import android.widget.PopupWindow;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.kowsar.gs.apod.R;
@@ -65,12 +71,15 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
     private FavouriteDB db;
     private LastUpdatedAPOD lastUpdatedAPOD;
     private Handler mHandler;
+    private PopupWindow popupWindow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate(): ENTER");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        boolean isDarkMode = APODSharedPref.getInstance(this).getBoolean(Constant.APOD_DARK_MODE);
+        setDarkMode(isDarkMode);
         mHandler = new Handler();
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
@@ -83,7 +92,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             description.setJustificationMode(LineBreaker.JUSTIFICATION_MODE_INTER_WORD);
         }
         initPD();
-        showDialog("Wait.... Fetching data from server.", true);
+
         db = new FavouriteDB(this);
         lastUpdatedAPOD = new LastUpdatedAPOD(this);
 
@@ -151,7 +160,17 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
             showDialog(null, false);
             fetchLastDataFromDB();
         }
+        showDialog("Fetching data from server.", true);
+    }
 
+    private void setDarkMode(boolean isDarkMode) {
+        Log.d(TAG,"setDarkMode(): isDarkMode="+isDarkMode);
+
+        if (isDarkMode){
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
     }
 
     private void fetchLastDataFromDB() {
@@ -228,16 +247,19 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         String dateStr = "" + year + "-" + (month + 1) + "-" + dayOfMonth;
         Log.d(TAG, "onDateSet(): dateStr=" + dateStr);
         apodViewModel.getAPODByDate(dateStr);
-        showDialog("Wait....Fetching data from server", true);
+        showDialog("Fetching data from server", true);
     }
 
     public void showDialog(String msg, boolean isShow) {
+        Log.d(TAG, "showDialog(): isShow="+isShow);
         if (isShow) {
-            progressDialog.setMessage(msg);
-            progressDialog.show();
-            mHandler.postDelayed(timeOutRunnable, 20000);
+            if (!progressDialog.isShowing()){
+                progressDialog.setMessage(msg);
+                progressDialog.show();
+//                mHandler.postDelayed(timeOutRunnable, 20000);
+            }
         } else {
-            mHandler.removeCallbacks(timeOutRunnable);
+//            mHandler.removeCallbacksAndMessages (null);
             progressDialog.dismiss();
         }
     }
@@ -253,27 +275,45 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         }
     }
 
-    private void shouMenuPoppup(View view) {
-        Log.d(TAG, "shouMenuPoppup(): Enter");
 
-        PopupMenu menuPopup = new PopupMenu(this, view);
-        menuPopup.inflate(R.menu.apod_menu);
-        menuPopup.setOnMenuItemClickListener(item -> {
-            switch (item.getItemId()) {
-                case R.id.dark_mode_switch:
-                    Log.d(TAG, "menu item clicked: dark mode clicked");
-                    return true;
-                case R.id.go_favourite:
-                    Log.d(TAG, "menu item clicked: Favourite clicked");
-                    Intent intent = new Intent();
-                    intent.setClass(this, FavouriteActivity.class);
-                    startActivityForResult(intent, 555);
-                    return true;
-            }
-
-            return false;
+    public void showPopupWindow(View view){
+        Log.d(TAG, "showPopupWindow(): Popup menu showing...." );
+        boolean isDarkMode = APODSharedPref.getInstance(this).getBoolean(Constant.APOD_DARK_MODE);
+        LayoutInflater layoutInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final View popupView = layoutInflater.inflate(R.layout.popup_window_layout, null);
+        Switch  darkMode= popupView.findViewById(R.id.dark_mode_switch);
+        darkMode.setChecked(isDarkMode);
+        darkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            Log.d(TAG, "Dark mode Menu item clicked:isChecked= " + isChecked);
+            popupWindow.dismiss();
+            APODSharedPref.getInstance(this).putBoolean(Constant.APOD_DARK_MODE, isChecked);
+            setDarkMode(isChecked);
         });
-        menuPopup.show();
+        TextView menuFavList=popupView.findViewById(R.id.go_favourite);
+        menuFavList.setOnClickListener(v->{
+            Log.d(TAG, "Favourite Menu item clicked");
+            popupWindow.dismiss();
+            Intent intent = new Intent();
+            intent.setClass(this, FavouriteActivity.class);
+            startActivityForResult(intent, 555);
+
+        });
+
+
+        popupWindow = new PopupWindow(
+                popupView,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        popupWindow.setBackgroundDrawable(new BitmapDrawable());
+        popupWindow.setOutsideTouchable(true);
+        popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                Log.d(TAG, "popup:onDismiss(): Popup window dismiss");
+            }
+        });
+        popupWindow.showAsDropDown(view);
     }
 
     protected URL stringToURL(String strUrl) {
@@ -323,19 +363,24 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
                 break;
             case R.id.menu:
                 Log.d(TAG, "onClick(): Menu btn clicked");
-                shouMenuPoppup(v);
+                showPopupWindow(v);
                 break;
         }
     }
 
     Runnable timeOutRunnable = () -> {
+        Log.d(TAG, " Progress bar not shwoimng. Return...is shwoing="+progressDialog.isShowing());
+        if (!progressDialog.isShowing()){
+            Log.d(TAG, " Progress bar not shwoimng. Return...");
+            return;
+        }
         showDialog(null, false);
         Toast.makeText(this, "Data not fetch due to Network error!!! Please try again", Toast.LENGTH_LONG).show();
     };
 
     private class DownloadTask extends AsyncTask<URL, Void, Bitmap> {
         protected void onPreExecute() {
-            showDialog("Wait....Downloading image.", true);
+            showDialog("Downloading image.", true);
         }
 
         protected Bitmap doInBackground(URL... urls) {
@@ -379,6 +424,7 @@ public class MainActivity extends AppCompatActivity implements DatePickerDialog.
         return BitmapFactory.decodeByteArray(image, 0, image.length);
     }
 
+    //insert last information to SQLIte DB
     private void insertToDb(Bitmap bitmap) {
         byte[] imageData = getBytes(bitmap);
         lastUpdatedAPOD.insertItem(currentItem.getTitle(), currentItem.getDate(), currentItem.getExplanation(), imageData);

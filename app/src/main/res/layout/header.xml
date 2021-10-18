@@ -14,7 +14,7 @@
         android:layout_marginLeft="10dp"
         android:text="Today's APOD"
         android:textSize="30sp"
-        android:textColor="@color/black"
+        android:textColor="@color/textColor"
         android:gravity="center_vertical"/>
     <ImageButton
         android:id="@+id/menu"

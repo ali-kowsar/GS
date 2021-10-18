@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.MainActivity">
+    tools:context=".view.MainActivity"
+    android:background="@color/backgroundColor">
 
     <include
         android:id="@+id/header_ll"
@@ -34,7 +35,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:adjustViewBounds="true" />
+                android:adjustViewBounds="true"
+                android:background="@drawable/default_apod_image_gs"/>
 
             <TextView
                 android:id="@+id/today"
@@ -44,7 +46,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_marginTop="20dp"
                 android:text=""
-                android:textColor="@color/black"
+                android:textColor="@color/textColor"
                 android:textSize="20sp" />
 
             <TextView
@@ -54,7 +56,7 @@
                 android:layout_below="@+id/today"
                 android:layout_marginTop="20dp"
                 android:text=""
-                android:textColor="@color/black"
+                android:textColor="@color/textColor"
                 android:textSize="25sp"
                 android:textStyle="bold|italic" />
 
@@ -64,7 +66,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/pod_title"
                 android:layout_marginTop="20dp"
-                android:textColor="@color/black"
+                android:textColor="@color/textColor"
                 android:textSize="20sp"
                 android:textStyle="" />
         </RelativeLayout>

@@ -1,0 +1,35 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".view.MainActivity"
+    android:padding="10dp"
+    android:background="@color/backgroundColor">
+
+    <Switch
+        android:id="@+id/dark_mode_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="20dp"
+        android:text="@string/dark_mode"
+        android:layout_marginLeft="10dp"
+        android:switchPadding="5dp"
+        android:textSize="15sp"/>
+
+    <TextView
+        android:id="@+id/go_favourite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/dark_mode_switch"
+        android:layout_marginTop="22dp"
+        android:textColor="@color/textColor"
+        android:text="@string/go_to_favourite"
+        android:textSize="15sp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+</RelativeLayout>
